@@ -16,7 +16,7 @@ const hard = [
 
 // Create variables
 let timer;
-let timerRemaining;
+let timeRemaining;
 let lives;
 let selectedNumber;
 let selectedBox;
@@ -27,7 +27,7 @@ window.onload = function() {
   id('start-btn').addEventListener('click', startGame);
 }
 
-function startGame() {
+function startGame(e) {
   // Choose Game level
   let board;
 
@@ -37,13 +37,21 @@ function startGame() {
     board = medium[0];
   } else board = hard[0];
     
-  // Set lives to 3 and enable selecting numbers and tiles
-  lives = 3;
+  // Set lives to 5 and enable selecting numbers and tiles
+  lives = 5;
   disableSelect = false;
   id('lives').textContent = `Lives Remaning: ${lives}`;
 
+  // Make to two column
+  setLayout();
   // Create board based on level
   setBoard(board);
+  // Starts timer
+  setTimer();
+  // Set theme
+  setTheme();
+  // Show container
+  id('number-container').classList.remove('hidden');
 }
 
 function setBoard(board) {
@@ -53,7 +61,7 @@ function setBoard(board) {
   let idCount = 0;
   // Create 81 boxes
   for (let i=0; i < 81; i++) {
-    var box = document.createElement('p');
+    let box = document.createElement('p');
     // Check if it is not a dash then it should not be blank
     if (board.charAt(i) != '-') {
       // set box number
@@ -114,9 +122,58 @@ function clearBoard() {
   selectedNumber = null;
 }
 
+function setTimer() {
+  // Set remaining time and convert mins to seconds
+  if (id('time-1').checked) {
+    timeRemaining = Number(id('time-1').value) * 60;
+  } else if (id('time-2').checked) {
+    timeRemaining = Number(id('time-2').value) * 60;
+  } else {
+    timeRemaining = Number(id('time-3').value) * 60;
+  }
+  
+  // Set timer
+  id('timer').textContent = convertTime(timeRemaining);
+  // Update timer every second
+  timer = setInterval(function() {
+          timeRemaining --;
+          // If no time reaches 0 end the game
+          if (timeRemaining === 0) {
+            endGame();
+          }
+          id('timer').textContent = convertTime(timeRemaining);
+          }, 1000)
+}
+
+// Covert seconds into Mins : Secs format
+function convertTime(time) {
+  let mins = Math.floor(time/60);
+  let secs = time % 60;
+  if (secs < 10) {
+    secs = `0${secs}`;
+  }
+  return `${mins} : ${secs}`;
+}
+
+function setTheme() {
+  if (id('theme-1').checked) {
+    qs('body').classList.remove('dark');
+  } else {
+    qs('body').classList.add('dark');
+  }
+}
+
+function setLayout() {
+  qs('.row').firstElementChild.classList.add('column-1');
+}
+
 // Helper Functions
 function id(id) {
   return document.getElementById(id)
+}
+
+function cn(class_name) {
+  return document.getElementsByClassName(class_name)
 }
 
 function qs(selector) {
