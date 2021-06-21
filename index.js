@@ -1,6 +1,11 @@
 // get from internet
+// const easy = [
+//   '2-5--9--4------3-77--856-1-45-7-------9---1-------2-85-2-418--66-8------1--2--7-8',
+//   '215379864986124357734856219452781693869543172371692485527418936648937521193265748'
+// ];
+
 const easy = [
-  '2-5--9--4------3-77--856-1-45-7-------9---1-------2-85-2-418--66-8------1--2--7-8',
+  '21537986498612435773485621945278169386954317237169248552741893664893752119326-7-8',
   '215379864986124357734856219452781693869543172371692485527418936648937521193265748'
 ];
 
@@ -23,8 +28,11 @@ let selectedBox;
 let disableSelect;
 
 window.onload = function() {
-  // Run startgame function when button is clicked
+  let quantityNumBlock = id('number-block').children.length
+  // Click button to start the game
   id('start-btn').addEventListener('click', startGame);
+  // Click each number-block
+  clickableNumBlock(quantityNumBlock)
 }
 
 function startGame(e) {
@@ -51,7 +59,7 @@ function startGame(e) {
   // Set theme
   setTheme();
   // Show container
-  id('number-container').classList.remove('hidden');
+  id('number-block').classList.remove('hidden');
 }
 
 function setBoard(board) {
@@ -62,21 +70,38 @@ function setBoard(board) {
   // Create 81 boxes
   for (let i=0; i < 81; i++) {
     let box = document.createElement('p');
+    // Assign box id
+    box.id = idCount;
+    // Increment for next box + 1
+    idCount ++;
+    // Add box class to all boxes
+    box.classList.add('box');
     // Check if it is not a dash then it should not be blank
     if (board.charAt(i) != '-') {
       // set box number
       box.textContent = board.charAt(i);
     } else {
-      // make the box blank
+      // Add eventListener to Box
+      box.addEventListener('click', function() {
+        if (!disableSelect) {
+          // If selection exists
+          if (box.classList.contains('selected')) {
+            // Remove selection
+            box.classList.remove('selected');
+            selectedBox = null;
+          } else {
+            // Deselect all boxes
+            for (let i=0; i < 81; i++) {
+              qsa('.box')[i].classList.remove('selected');
+            }
+            // Show selection and update content
+            box.classList.add('selected');
+            selectedBox = box;
+            updateBox();
+          }
+        }
+      });
     }
-    // Assign box id
-    box.id = idCount;
-
-    // Increment for next box
-    idCount ++;
-
-    // Add box class to all boxes
-    box.classList.add('box');
 
     // Add thick border-top
     if ((box.id >= 0 && box.id < 9) || (box.id > 26 && box.id < 36) || (box.id > 53 && box.id < 63)) {
@@ -114,8 +139,8 @@ function clearBoard() {
   // If there is a timer clear it
   if (timer) clearTimeout(timer);
   // Deselect any numbers
-  for (let i=0; i < id('number-container').children.length; i++) {
-    id('number-container').children[i].classList.remove('selected');
+  for (let i=0; i < id('number-block').children.length; i++) {
+    id('number-block').children[i].classList.remove('selected');
   }
   // Clear selected variables
   selectedBox = null;
@@ -139,7 +164,7 @@ function setTimer() {
           timeRemaining --;
           // If no time reaches 0 end the game
           if (timeRemaining === 0) {
-            endGame();
+            gameResult();
           }
           id('timer').textContent = convertTime(timeRemaining);
           }, 1000)
@@ -153,6 +178,116 @@ function convertTime(time) {
     secs = `0${secs}`;
   }
   return `${mins} : ${secs}`;
+}
+
+function clickableNumBlock(quantityNumBlock) {
+  for (let i=0; i < quantityNumBlock; i++) {
+    id('number-block').children[i].addEventListener('click', function() {
+      // if disableSelect is true
+      if (!disableSelect) {
+        // Check if a number is being selected
+        if (this.classList.contains('selected')) {
+          this.classList.remove('selected');
+          selectedNumber = null;
+        } else {
+          // Deselect all numbers
+          for (let i=0; i < quantityNumBlock; i++) {
+            id('number-block').children[i].classList.remove('selected');
+          }
+          // Select clicked block and update selectedNumber variable
+          this.classList.add('selected');
+          selectedNumber = this;
+          updateBox();
+        }
+      }
+    });
+  }
+}
+
+function updateBox() {
+  // Check both selectedNumber and selectedBox see whether they have value or null
+  if (selectedNumber && selectedBox) {
+    selectedBox.textContent = selectedNumber.textContent;
+
+    // Check if the number inside the selectedBox matches with the right solution
+    if (checkAnswer(selectedBox)) {
+      // Deselect both selected number and box
+      selectedNumber.classList.remove('selected');
+      selectedBox.classList.remove('selected');
+      // Clear both selectedNumber and selectedBox value
+      selectedNumber = null;
+      selectedBox = null;
+      // Check if the game is completed
+      if (checkGame()) {
+        gameResult();
+      }
+    } else {
+      // if number is not correct
+      disableSelect = true;
+      // Make box to appear font color in red
+      selectedBox.classList.add('incorrect');
+      // Remove wrong number in seconds
+      setTimeout(function() {
+        // Deduct one live
+        lives --;
+        // Check if there is still live
+        if (lives === 0) {
+          gameResult();
+        } else {
+          id('lives').textContent = `Lives Remaning: ${lives}`;
+          disableSelect = false;
+        }
+        selectedBox.classList.remove('incorrect', 'selected');
+        selectedNumber.classList.remove('selected');
+        // Clear Box and selected variables
+        selectedBox.textContent = '';
+        selectedBox = null;
+        selectedNumber = null;
+      }, 1000);
+    }
+  }
+}
+
+function checkGame() {
+  let boxes = qsa('.box');
+  // Check if every single box is filled
+  for (let i=0; i < boxes.length; i++) {
+    if (boxes[i].textContent === '') {
+      return false;
+    }
+  }
+  return true;
+}
+
+function gameResult() {
+  // Disable Action
+  disableSelect = true;
+  // Stop Timer
+  clearTimeout(timer);
+  // Show result
+  if (lives === 0 || timeRemaining === 0) {
+    id('lives').textContent = 'You Lost!';
+  } else {
+    id('lives').textContent = 'You Won!';
+  }
+}
+
+function checkAnswer(box) {
+  // Get solution from chosen level
+  let answer;
+  if (id('level-easy').checked) {
+    answer = easy[1];
+  } else if (id('level-medium').checked) {
+    answer = medium[1];
+  } else {
+    answer = hard[1];
+  }
+  // check both box's number and answer
+  if (answer.charAt(box.id) === box.textContent) {
+    return true
+  } else {
+    return false
+  }
 }
 
 function setTheme() {

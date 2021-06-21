@@ -61,11 +61,11 @@ p#timer, p#lives {
   justify-content: center;
 }
 
-#number-container {
+#number-block {
   margin-top: 45px;
 }
 
-#number-container > p {
+#number-block > p {
   border: 1px solid black;
   width: 40px;
   height: 40px;
@@ -100,7 +100,8 @@ p#timer, p#lives {
 }
 
 p.selected {
-  background-color: lightblue;
+  background-color: orange;
+  color: white;
 }
 
 p.incorrect {
