@@ -1,11 +1,12 @@
 // get from internet
+
 // const easy = [
-//   '2-5--9--4------3-77--856-1-45-7-------9---1-------2-85-2-418--66-8------1--2--7-8',
+//   '21537986498612435773485621945278169386954317237169248552741893664893752119326-7-8',
 //   '215379864986124357734856219452781693869543172371692485527418936648937521193265748'
 // ];
 
 const easy = [
-  '21537986498612435773485621945278169386954317237169248552741893664893752119326-7-8',
+  '2-5--9--4------3-77--856-1-45-7-------9---1-------2-85-2-418--66-8------1--2--7-8',
   '215379864986124357734856219452781693869543172371692485527418936648937521193265748'
 ];
 
@@ -26,40 +27,90 @@ let lives;
 let selectedNumber;
 let selectedBox;
 let disableSelect;
+let board;
 
-window.onload = function() {
-  let quantityNumBlock = id('number-block').children.length
+document.addEventListener('DOMContentLoaded', function() {
+  // Disable game by default
+  disableSelect = true
+  // set board by default
+  setBoard(easy[0]);
+  // set board base on selected level
+  qsa('input[name="level"]').forEach(function (e) {
+    e.addEventListener("change", function(event) {
+      if (id('level-easy').checked) {
+        board = easy[0];
+      } else if (id('level-medium').checked) {
+        board = medium[0];
+      } else board = hard[0];
+
+      disableSelect = true;
+      id('states').classList.add('hidden');
+      setBoard(board);
+    });
+  })
   // Click button to start the game
   id('start-btn').addEventListener('click', startGame);
+
+  // set number block
+  let quantityNumBlock = id('number-block').children.length
   // Click each number-block
   clickableNumBlock(quantityNumBlock)
-}
+});
+
+document.addEventListener('keydown', function(e) {
+  if (!isNaN(parseInt(e.key))) {
+    selectedBox.textContent = e.key;
+
+    if (checkAnswer(selectedBox)) {
+      selectedBox.classList.remove('selected');
+      selectedBox = null;
+
+      if (checkGame()) {
+        gameResult();
+      }
+    } else {
+      // if number is not correct
+      disableSelect = true;
+      // Make box to appear font color in red
+      selectedBox.classList.add('incorrect');
+      // Remove wrong number in seconds
+      setTimeout(function() {
+        // Deduct one live
+        lives --;
+        // Check if there is still live
+        if (lives === 0) {
+          gameResult();
+        } else {
+          id('lives').textContent = `Lives Remaning: ${lives}`;
+          disableSelect = false;
+        }
+        selectedBox.classList.remove('incorrect', 'selected');
+        // Clear Box and selected variables
+        selectedBox.textContent = '';
+        selectedBox = null;
+      }, 1000);
+    }
+  }
+})
 
 function startGame(e) {
-  // Choose Game level
-  let board;
+// Set lives to 5 and enable selecting numbers and tiles
+  lives = 5;
+  disableSelect = false;
+  id('states').classList.remove('hidden');
+  id('lives').textContent = `Lives Remaning: ${lives}`;
 
+  // Create board based on level
   if (id('level-easy').checked) {
     board = easy[0];
   } else if (id('level-medium').checked) {
     board = medium[0];
   } else board = hard[0];
     
-  // Set lives to 5 and enable selecting numbers and tiles
-  lives = 5;
-  disableSelect = false;
-  id('lives').textContent = `Lives Remaning: ${lives}`;
-
-  // Make to two column
-  setLayout();
-  // Create board based on level
   setBoard(board);
+
   // Starts timer
   setTimer();
-  // Set theme
-  setTheme();
-  // Show container
-  id('number-block').classList.remove('hidden');
 }
 
 function setBoard(board) {
@@ -129,10 +180,6 @@ function clearBoard() {
   // Access all of the boxes
   let boxes = qsa('.box')
   // Remove each box
-    // Looks like
-    // boxes[0].remove();
-    // boxes[1].remove();
-    // boxes[2].remove();
   for (let i=0; i < boxes.length; i++) {
     boxes[i].remove();
   }
@@ -288,18 +335,6 @@ function checkAnswer(box) {
   } else {
     return false
   }
-}
-
-function setTheme() {
-  if (id('theme-1').checked) {
-    qs('body').classList.remove('dark');
-  } else {
-    qs('body').classList.add('dark');
-  }
-}
-
-function setLayout() {
-  qs('.row').firstElementChild.classList.add('column-1');
 }
 
 // Helper Functions

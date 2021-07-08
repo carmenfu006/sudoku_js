@@ -2,11 +2,6 @@
   display :none;
 }
 
-body.dark {
-  background-color: #333333;
-  color: white;
-}
-
 /* Clear floats after the columns */
 .row:after {
   content: "";
@@ -14,14 +9,8 @@ body.dark {
   clear: both;
 }
 
-/* Create two equal columns that floats next to each other */
-.column-1 {
+.column {
   float: left;
-  padding: 10px;
-}
-
-.column-2 {
-  float: center;
   padding: 10px;
 }
 
