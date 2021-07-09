@@ -26,24 +26,20 @@ let timeRemaining;
 let lives;
 let selectedNumber;
 let selectedBox;
-let disableSelect;
+let disabledGame;
 let board;
 
 document.addEventListener('DOMContentLoaded', function() {
   // Disable game by default
-  disableSelect = true
+  disabledGame = true
   // set board by default
   setBoard(easy[0]);
   // set board base on selected level
   qsa('input[name="level"]').forEach(function (e) {
     e.addEventListener("change", function(event) {
-      if (id('level-easy').checked) {
-        board = easy[0];
-      } else if (id('level-medium').checked) {
-        board = medium[0];
-      } else board = hard[0];
+      getGameLevel();
 
-      disableSelect = true;
+      disabledGame = true;
       id('states').classList.add('hidden');
       setBoard(board);
     });
@@ -58,37 +54,40 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('keydown', function(e) {
-  if (!isNaN(parseInt(e.key))) {
-    selectedBox.textContent = e.key;
+  if (selectedBox != null) {
+    if (!isNaN(parseInt(e.key))) {
+      selectedBox.textContent = e.key;
+      
 
-    if (checkAnswer(selectedBox)) {
-      selectedBox.classList.remove('selected');
-      selectedBox = null;
-
-      if (checkGame()) {
-        gameResult();
-      }
-    } else {
-      // if number is not correct
-      disableSelect = true;
-      // Make box to appear font color in red
-      selectedBox.classList.add('incorrect');
-      // Remove wrong number in seconds
-      setTimeout(function() {
-        // Deduct one live
-        lives --;
-        // Check if there is still live
-        if (lives === 0) {
-          gameResult();
-        } else {
-          id('lives').textContent = `Lives Remaning: ${lives}`;
-          disableSelect = false;
-        }
-        selectedBox.classList.remove('incorrect', 'selected');
-        // Clear Box and selected variables
-        selectedBox.textContent = '';
+      if (checkAnswer(selectedBox)) {
+        selectedBox.classList.remove('selected');
         selectedBox = null;
-      }, 1000);
+
+        if (checkGame()) {
+          gameResult();
+        }
+      } else {
+        // if number is not correct
+        disabledGame = true;
+        // Make box to appear font color in red
+        selectedBox.classList.add('incorrect');
+        // Remove wrong number in seconds
+        setTimeout(function() {
+          // Deduct one live
+          lives --;
+          // Check if there is still live
+          if (lives === 0) {
+            gameResult();
+          } else {
+            id('lives').textContent = `Lives Remaning: ${lives}`;
+            disabledGame = false;
+          }
+          selectedBox.classList.remove('incorrect', 'selected');
+          // Clear Box and selected variables
+          selectedBox.textContent = '';
+          selectedBox = null;
+        }, 1000);
+      }
     }
   }
 })
@@ -96,16 +95,12 @@ document.addEventListener('keydown', function(e) {
 function startGame(e) {
 // Set lives to 5 and enable selecting numbers and tiles
   lives = 5;
-  disableSelect = false;
+  disabledGame = false;
   id('states').classList.remove('hidden');
   id('lives').textContent = `Lives Remaning: ${lives}`;
 
   // Create board based on level
-  if (id('level-easy').checked) {
-    board = easy[0];
-  } else if (id('level-medium').checked) {
-    board = medium[0];
-  } else board = hard[0];
+  getGameLevel();
     
   setBoard(board);
 
@@ -134,7 +129,7 @@ function setBoard(board) {
     } else {
       // Add eventListener to Box
       box.addEventListener('click', function() {
-        if (!disableSelect) {
+        if (!disabledGame) {
           // If selection exists
           if (box.classList.contains('selected')) {
             // Remove selection
@@ -230,8 +225,8 @@ function convertTime(time) {
 function clickableNumBlock(quantityNumBlock) {
   for (let i=0; i < quantityNumBlock; i++) {
     id('number-block').children[i].addEventListener('click', function() {
-      // if disableSelect is true
-      if (!disableSelect) {
+      // if disabledGame is true
+      if (!disabledGame) {
         // Check if a number is being selected
         if (this.classList.contains('selected')) {
           this.classList.remove('selected');
@@ -270,7 +265,7 @@ function updateBox() {
       }
     } else {
       // if number is not correct
-      disableSelect = true;
+      disabledGame = true;
       // Make box to appear font color in red
       selectedBox.classList.add('incorrect');
       // Remove wrong number in seconds
@@ -282,7 +277,7 @@ function updateBox() {
           gameResult();
         } else {
           id('lives').textContent = `Lives Remaning: ${lives}`;
-          disableSelect = false;
+          disabledGame = false;
         }
         selectedBox.classList.remove('incorrect', 'selected');
         selectedNumber.classList.remove('selected');
@@ -308,7 +303,7 @@ function checkGame() {
 
 function gameResult() {
   // Disable Action
-  disableSelect = true;
+  disabledGame = true;
   // Stop Timer
   clearTimeout(timer);
   // Show result
@@ -352,4 +347,12 @@ function qs(selector) {
 
 function qsa(selector) {
   return document.querySelectorAll(selector)
+}
+
+function getGameLevel() {
+  if (id('level-easy').checked) {
+    board = easy[0];
+  } else if (id('level-medium').checked) {
+    board = medium[0];
+  } else board = hard[0];
 }
