@@ -26,12 +26,10 @@ let timeRemaining;
 let lives;
 let selectedNumber;
 let selectedBox;
-let disabledGame;
+let disabledGame = true;
 let board;
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Disable game by default
-  disabledGame = true
   // set board by default
   setBoard(easy[0]);
   // set board base on selected level
