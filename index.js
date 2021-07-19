@@ -27,11 +27,11 @@ let lives;
 let selectedNumber;
 let selectedBox;
 let disabledGame = true;
-let board;
+let board = easy[0];
 
 document.addEventListener('DOMContentLoaded', function() {
   // set board by default
-  setBoard(easy[0]);
+  setBoard(board);
   // set board base on selected level
   qsa('input[name="level"]').forEach(function (e) {
     e.addEventListener("change", function(event) {
